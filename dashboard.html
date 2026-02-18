@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="container py-4">
+  <a href="/" class="btn btn-secondary mb-3">Back</a>
+  <h3>Dashboard</h3>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card p-3 mb-3">
+        <h5>Total products</h5>
+        <h2>{{ total_products }}</h2>
+      </div>
+      <div class="card p-3">
+        <h5>Low stock</h5>
+        <h3>{{ low_count }}</h3>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <canvas id="salesChart"></canvas>
+    </div>
+  </div>
+
+  <h5 class="mt-4">Low Items</h5>
+  <ul>
+    {% for it in low_items %}
+      <li>{{ it['name'] }} — {{ it['quantity'] }}</li>
+    {% endfor %}
+  </ul>
+
+<script>
+  const chartData = {{ chart_data|tojson }};
+  const labels = chartData.map(x=>x.date).reverse();
+  const values = chartData.map(x=>x.value).reverse();
+
+  new Chart(document.getElementById("salesChart"), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Sales (units) last days',
+        data: values,
+        tension: 0.3,
+        fill:false,
+        borderColor: 'rgb(75, 192, 192)'
+      }]
+    }
+  });
+</script>
+</body>
+</html>

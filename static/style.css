@@ -1,0 +1,51 @@
+/* Glass UI shared styles */
+
+:root{
+  --glass-bg: rgba(255,255,255,0.18);
+  --glass-bg-dark: rgba(0,0,0,0.32);
+  --accent: #1e90ff;
+  --radius: 14px;
+}
+
+/* Base */
+body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; padding:0; }
+.container { max-width:1100px; }
+.light-mode { background: url("https://i.imgur.com/tU1H2cO.jpeg") no-repeat center/cover fixed; color:#111; }
+.dark-mode { background: url("https://i.imgur.com/QT5q7vm.jpeg") no-repeat center/cover fixed; color:#fff; }
+
+/* Glass card */
+.glass-card {
+  backdrop-filter: blur(10px) saturate(110%);
+  background: var(--glass-bg);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+/* Dark adjustments */
+.dark-mode .glass-card { background: var(--glass-bg-dark); }
+
+/* Buttons */
+.glass-btn { cursor:pointer; }
+
+/* item card */
+.item-card { border-radius:12px; overflow:hidden; background:transparent; }
+.product-thumb { width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; }
+
+/* grid */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+
+/* floating scan button */
+.scan-floating-btn {
+  position:fixed; right:22px; bottom:22px;
+  width:72px; height:72px; border-radius:50%;
+  background:var(--accent); display:flex; align-items:center; justify-content:center;
+  color:white; font-size:30px; box-shadow:0 10px 30px rgba(30,144,255,0.25);
+  z-index:9999;
+}
+
+/* theme toggle */
+.theme-toggle { position:fixed; right:18px; top:18px; z-index:9999; }
+
+/* small helpers */
+.small { font-size:0.85rem; }

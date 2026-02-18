@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Scan</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+</head>
+<body class="light-mode container py-4">
+
+  <a class="btn btn-sm btn-outline-secondary mb-3" href="/">← Back</a>
+
+  <div class="glass-card text-center p-3">
+    <h5><span class="material-icons">qr_code_scanner</span> Scan Barcode</h5>
+    <p>Point camera at barcode. It will redirect to the product page.</p>
+    <div id="scanner-area" style="max-width:420px;margin:14px auto;">
+      <video id="preview" style="width:100%;border-radius:12px;background:#000"></video>
+      <div class="scanner-frame"></div>
+    </div>
+    <p id="status" class="small text-muted">Waiting for camera...</p>
+  </div>
+
+<script>
+  const video = document.getElementById('preview');
+  const status = document.getElementById('status');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true);
+      video.play();
+      status.textContent = "Scanning...";
+      requestAnimationFrame(tick);
+    })
+    .catch(err => {
+      status.textContent = "Camera access denied or not available.";
+      console.error(err);
+    });
+
+  function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0,0,canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+      if (code) {
+        window.location.href = '/scan/' + encodeURIComponent(code.data);
+        return;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+</script>
+
+</body>
+</html>

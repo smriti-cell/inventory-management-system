@@ -1,0 +1,24 @@
+<script src="quagga.min.js"></script>
+
+<h1>Scan Barcode</h1>
+
+<div id="scanner" style="width:300px;height:200px;border:1px solid black;"></div>
+
+<script>
+Quagga.init({
+    inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#scanner')
+    },
+    decoder: { readers: ["ean_reader", "code_128_reader"] }
+}, function (err) {
+    if (err) { console.error(err); return; }
+    Quagga.start();
+});
+
+Quagga.onDetected(function (data) {
+    let code = data.codeResult.code;
+    window.location.href = "/scan/" + code;
+});
+</script>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Inventory — Home</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body class="light-mode">
+
+  <!-- THEME TOGGLE -->
+  <div class="theme-toggle glass-btn" onclick="toggleTheme()">
+    <span class="material-icons" id="themeIcon">dark_mode</span>
+  </div>
+
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="m-0">Inventory</h3>
+      <div>
+        <a class="btn btn-sm btn-outline-secondary me-2" href="/dashboard">Dashboard</a>
+        <a class="btn btn-sm btn-outline-success me-2" href="/export_products">Export</a>
+        <a class="btn btn-sm btn-outline-danger" href="/logout">Logout</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- LEFT: controls -->
+      <div class="col-md-3 mb-3">
+        <input id="q" class="form-control mb-3" placeholder="Search products or barcodes...">
+
+        <div class="glass-card p-3 mb-3">
+          <h6 class="mb-2">Add Category</h6>
+          <form method="POST" action="/add_category">
+            <input name="name" class="form-control mb-2" placeholder="Category name">
+            <button class="btn btn-primary w-100 btn-sm">Add</button>
+          </form>
+        </div>
+
+        <div class="glass-card p-3 mb-3">
+          <h6 class="mb-2">Filters</h6>
+          <a href="/" class="d-block mb-1">All</a>
+          {% for c in categories %}
+            <a href="/category/{{ c['id'] }}" class="d-block mb-1 {% if active_category and active_category==c['id'] %}fw-bold{% endif %}">{{ c['name'] }}</a>
+          {% endfor %}
+        </div>
+
+        <div class="glass-card p-3">
+          <h6 class="mb-2">Add Product</h6>
+          <form method="POST" action="/add_product" enctype="multipart/form-data">
+            <input class="form-control mb-1" type="text" name="name" placeholder="Name" required>
+            <input class="form-control mb-1" type="number" name="quantity" placeholder="Qty" value="0">
+            <input class="form-control mb-1" type="number" name="threshold" placeholder="Low limit" value="5">
+            <select name="category_id" class="form-control mb-1">
+              <option value="">-- Category --</option>
+              {% for c in categories %}<option value="{{ c['id'] }}">{{ c['name'] }}</option>{% endfor %}
+            </select>
+            <input class="form-control mb-1" type="file" name="image">
+            <button class="btn btn-primary w-100 btn-sm">Add Product</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- RIGHT: product grid -->
+      <div class="col-md-9">
+        <div id="grid" class="grid">
+          {% for p in products %}
+            <div class="card item-card p-2">
+              {% if p['image_path'] %}
+                <img src="/static/product_images/{{ p['image_path'] }}" class="card-img-top product-thumb">
+              {% else %}
+                <!-- show barcode thumb if no product image -->
+                <img src="/static/barcodes/{{ p['barcode'] }}.png" class="card-img-top product-thumb" onerror="this.style.display='none'">
+              {% endif %}
+              <div class="p-2">
+                <h6 class="mb-1">{{ p['name'] }}</h6>
+                <p class="small text-muted mb-1">Qty: {{ p['quantity'] }}</p>
+                <div class="d-flex gap-2">
+                  <a class="btn btn-sm btn-outline-primary" href="/product/{{ p['id'] }}">Open</a>
+                  <form method="POST" action="/delete_product/{{ p['id'] }}" onsubmit="return confirm('Delete?')" style="display:inline">
+                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING SCAN BUTTON -->
+  <a href="/scan_page" class="scan-floating-btn shadow">
+    <span class="material-icons">qr_code_scanner</span>
+  </a>
+
+<script>
+  // theme
+  function toggleTheme() {
+    const body = document.body;
+    const icon = document.getElementById("themeIcon");
+    if (body.classList.contains("light-mode")) {
+      body.classList.replace("light-mode", "dark-mode");
+      icon.textContent = "light_mode";
+      localStorage.setItem("theme", "dark");
+    } else {
+      body.classList.replace("dark-mode", "light-mode");
+      icon.textContent = "dark_mode";
+      localStorage.setItem("theme", "light");
+    }
+  }
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.replace("light-mode", "dark-mode");
+    document.getElementById("themeIcon").textContent = "light_mode";
+  }
+
+  // search (server-side quick API)
+  const q = document.getElementById("q");
+  q.addEventListener("input", async e => {
+    const val = e.target.value.trim();
+    if (!val) { location.reload(); return; }
+    const res = await fetch(`/api/search?q=${encodeURIComponent(val)}`);
+    const arr = await res.json();
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    arr.forEach(item=>{
+      grid.innerHTML += `
+        <div class="card item-card p-2">
+          <img src="/static/barcodes/${item.barcode}.png" class="card-img-top product-thumb" onerror="this.style.display='none'">
+          <div class="p-2">
+            <h6 class="mb-1">${item.name}</h6>
+            <a class="btn btn-sm btn-outline-primary" href="/product/${item.id}">Open</a>
+          </div>
+        </div>`;
+    });
+  });
+</script>
+</body>
+</html>
